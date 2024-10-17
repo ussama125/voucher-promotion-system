@@ -8,7 +8,7 @@ export class OrderController {
 
   @Post()
   async createOrder(@Body() createOrderDto: CreateOrderDto) {
-    // Implement order creation logic
+    return this.orderService.createOrder(createOrderDto);
   }
 
   @Put(':id/apply-voucher/:code')

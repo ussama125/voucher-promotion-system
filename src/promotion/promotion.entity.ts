@@ -9,12 +9,15 @@ export class Promotion {
   code: string;
 
   @Column('simple-array')
-  eligibleCategories: string[];
+  eligibleIds: string[];
+
+  @Column()
+  eligibleOn: 'products' | 'categories';
 
   @Column()
   discountType: 'percentage' | 'fixed';
 
-  @Column('decimal')
+  @Column('decimal', { precision: 10, scale: 2 })
   discountValue: number;
 
   @Column()

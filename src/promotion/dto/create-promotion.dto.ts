@@ -18,7 +18,10 @@ export class CreatePromotionDto {
   @IsArray()
   @ArrayNotEmpty()
   @IsString({ each: true })
-  eligibleCategories: string[];
+  eligibleIds: string[];
+
+  @IsEnum(['products', 'categories'])
+  eligibleOn: 'products' | 'categories';
 
   @IsEnum(['percentage', 'fixed'])
   discountType: 'percentage' | 'fixed';

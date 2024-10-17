@@ -4,15 +4,63 @@ import { Repository } from 'typeorm';
 import { Order } from './order.entity';
 import { VoucherService } from '../voucher/voucher.service';
 import { PromotionService } from '../promotion/promotion.service';
+import { OrderItem } from './entities/order-item.entity';
+import { CreateOrderDto } from './dto/create-order.dto';
+import { instanceToPlain } from 'class-transformer';
 
 @Injectable()
 export class OrderService {
   constructor(
     @InjectRepository(Order)
     private orderRepository: Repository<Order>,
-    private voucherService: VoucherService,
+    @InjectRepository(OrderItem)
+    private orderItemRepository: Repository<OrderItem>,
     private promotionService: PromotionService,
+    private voucherService: VoucherService,
   ) {}
+
+  async createOrder(createOrderDto: CreateOrderDto): Promise<any> {
+    const { items } = createOrderDto;
+
+    // Calculate total price based on items
+    const totalPrice = items.reduce(
+      (acc, item) => acc + item.price * item.quantity,
+      0,
+    );
+
+    const order = new Order();
+    order.totalAmount = totalPrice;
+
+    // Map items to OrderItem entities
+    const orderItems = items.map((item) => {
+      const orderItem = new OrderItem();
+      orderItem.productId = item.productId;
+      orderItem.quantity = item.quantity;
+      orderItem.price = item.price;
+      orderItem.category = item.category;
+      orderItem.order = order;
+      return orderItem;
+    });
+
+    order.items = orderItems;
+
+    // Save order and items
+    await this.orderRepository.save(order);
+    await this.orderItemRepository.save(orderItems);
+
+    return instanceToPlain(order);
+  }
+
+  async findOne(orderId: number): Promise<Order> {
+    return this.orderRepository.findOne({
+      where: { id: orderId },
+      relations: ['items'],
+    });
+  }
+
+  async saveOrder(order: Order): Promise<Order> {
+    return this.orderRepository.save(order);
+  }
 
   async applyVoucherToOrder(
     orderId: number,
@@ -100,7 +148,7 @@ export class OrderService {
 
     // Check if the order contains eligible products
     const hasEligibleProducts = order.items.some((item) =>
-      promotion.eligibleCategories.includes(item.category),
+      promotion.eligibleIds.includes(item.category),
     );
 
     if (!hasEligibleProducts) {

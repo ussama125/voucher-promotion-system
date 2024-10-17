@@ -4,9 +4,12 @@ import {
   Column,
   ManyToMany,
   JoinTable,
+  OneToMany,
 } from 'typeorm';
 import { Voucher } from '../voucher/voucher.entity';
 import { Promotion } from '../promotion/promotion.entity';
+import { OrderItem } from './entities/order-item.entity';
+import { Expose } from 'class-transformer';
 
 @Entity()
 export class Order {
@@ -16,13 +19,8 @@ export class Order {
   @Column('decimal')
   totalAmount: number;
 
-  @Column('simple-json')
-  items: {
-    productId: number;
-    quantity: number;
-    price: number;
-    category: string;
-  }[];
+  @OneToMany(() => OrderItem, (orderItem) => orderItem.order, { cascade: true })
+  items: OrderItem[];
 
   @ManyToMany(() => Voucher)
   @JoinTable()
@@ -31,4 +29,12 @@ export class Order {
   @ManyToMany(() => Promotion)
   @JoinTable()
   promotions: Promotion[];
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdAt: Date;
+
+  // @Expose()
+  // getItems() {
+  //   return this.items;
+  // }
 }
