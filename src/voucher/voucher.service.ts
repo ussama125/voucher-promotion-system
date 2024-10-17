@@ -1,9 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Voucher } from './voucher.entity';
 import { CreateVoucherDto } from './dto/create-voucher.dto';
 import { UpdateVoucherDto } from './dto/update-voucher.dto';
+import { Order } from 'src/order/order.entity';
 
 @Injectable()
 export class VoucherService {
@@ -77,6 +82,65 @@ export class VoucherService {
     const result = await this.voucherRepository.delete(id);
     if (result.affected === 0) {
       throw new NotFoundException(`Voucher with ID ${id} not found`);
+    }
+  }
+
+  async applyVoucher(order: Order, promoCode: string) {
+    const voucher = await this.voucherRepository.findOne({
+      where: { code: promoCode },
+    });
+
+    if (!voucher) {
+      throw new BadRequestException('Invalid voucher code');
+    }
+
+    this.validateVoucher(voucher, order);
+
+    // Apply discount
+    let discount = 0;
+    const eligibleTotal = order.totalAmount;
+
+    if (voucher.discountType === 'percentage') {
+      discount = (voucher.discountValue / 100) * eligibleTotal;
+    } else {
+      discount = Math.min(voucher.discountValue, eligibleTotal);
+    }
+
+    // Ensure max discount is 50%
+    // discount = Math.min(discount, eligibleTotal * 0.5);
+
+    order.discount = discount;
+
+    // Mark the voucher as used
+    voucher.usageCount++;
+    order.vouchers.push(voucher);
+    await this.voucherRepository.save(voucher);
+
+    return order;
+  }
+
+  private validateVoucher(voucher: Voucher, order: Order) {
+    if (new Date() > voucher.expirationDate) {
+      throw new BadRequestException('Voucher expired');
+    }
+
+    if (voucher.usageCount >= voucher.usageLimit) {
+      throw new BadRequestException('Voucher usage limit reached');
+    }
+
+    if (
+      voucher.minimumOrderValue &&
+      order.totalAmount < voucher.minimumOrderValue
+    ) {
+      throw new BadRequestException(
+        'Order total is below the minimum required for this voucher',
+      );
+    }
+
+    if (order.vouchers.some((p) => p.id === voucher.id)) {
+      throw new BadRequestException(
+        'This voucher has already been applied to the order',
+      );
     }
   }
 }

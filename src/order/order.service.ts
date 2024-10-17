@@ -64,6 +64,42 @@ export class OrderService {
 
   async applyVoucherToOrder(
     orderId: number,
+    promotionCode: string,
+  ): Promise<Order> {
+    const order = await this.findOne(orderId);
+
+    if (!order) {
+      throw new BadRequestException('Order not found');
+    }
+
+    const appliedOrder = await this.voucherService.applyVoucher(
+      order,
+      promotionCode,
+    );
+    await this.orderRepository.save(appliedOrder);
+    return appliedOrder;
+  }
+
+  async applyPromotionToOrder(
+    orderId: number,
+    promotionCode: string,
+  ): Promise<Order> {
+    const order = await this.findOne(orderId);
+
+    if (!order) {
+      throw new BadRequestException('Order not found');
+    }
+
+    const appliedOrder = await this.promotionService.applyPromotion(
+      order,
+      promotionCode,
+    );
+    await this.orderRepository.save(appliedOrder);
+    return appliedOrder;
+  }
+
+  async applyVoucherToOrder1(
+    orderId: number,
     voucherCode: string,
   ): Promise<Order> {
     const order = await this.orderRepository.findOne({
@@ -115,62 +151,6 @@ export class OrderService {
     voucher.usageCount++;
 
     await this.voucherService.updateUsageCount(voucher.id, 1);
-    return this.orderRepository.save(order);
-  }
-
-  async applyPromotionToOrder(
-    orderId: number,
-    promotionCode: string,
-  ): Promise<Order> {
-    const order = await this.orderRepository.findOne({
-      where: { id: orderId },
-      relations: ['promotions'],
-    });
-    const promotion = await this.promotionService.findByCode(promotionCode);
-
-    if (!order || !promotion) {
-      throw new BadRequestException('Order or promotion not found');
-    }
-
-    if (promotion.expirationDate < new Date()) {
-      throw new BadRequestException('Promotion has expired');
-    }
-
-    if (promotion.usageCount >= promotion.usageLimit) {
-      throw new BadRequestException('Promotion usage limit exceeded');
-    }
-
-    if (order.promotions.some((p) => p.id === promotion.id)) {
-      throw new BadRequestException(
-        'This promotion has already been applied to the order',
-      );
-    }
-
-    // Check if the order contains eligible products
-    const hasEligibleProducts = order.items.some((item) =>
-      promotion.eligibleIds.includes(item.category),
-    );
-
-    if (!hasEligibleProducts) {
-      throw new BadRequestException('No eligible products for this promotion');
-    }
-
-    let discountAmount: number;
-    if (promotion.discountType === 'percentage') {
-      discountAmount = order.totalAmount * (promotion.discountValue / 100);
-    } else {
-      discountAmount = promotion.discountValue;
-    }
-
-    // Ensure the discount doesn't exceed 50% of the order total
-    const maxDiscount = order.totalAmount * 0.5;
-    discountAmount = Math.min(discountAmount, maxDiscount);
-
-    order.totalAmount -= discountAmount;
-    order.promotions.push(promotion);
-    promotion.usageCount++;
-
-    await this.promotionService.updateUsageCount(promotion.id, 1);
     return this.orderRepository.save(order);
   }
 }

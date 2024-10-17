@@ -1,9 +1,15 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Promotion } from './promotion.entity';
 import { CreatePromotionDto } from './dto/create-promotion.dto';
 import { UpdatePromotionDto } from './dto/update-promotion.dto';
+import { OrderItem } from 'src/order/entities/order-item.entity';
+import { Order } from 'src/order/order.entity';
 
 @Injectable()
 export class PromotionService {
@@ -82,6 +88,73 @@ export class PromotionService {
     const result = await this.promotionRepository.delete(id);
     if (result.affected === 0) {
       throw new NotFoundException(`Promotion with ID ${id} not found`);
+    }
+  }
+
+  async applyPromotion(order: Order, promoCode: string) {
+    const promotion = await this.promotionRepository.findOne({
+      where: { code: promoCode },
+    });
+
+    if (!promotion) {
+      throw new BadRequestException('Invalid promotion code');
+    }
+
+    this.validatePromotion(promotion, order);
+
+    // Check eligibility for categories/items
+    const eligibleItems = order.items.filter((item: OrderItem) => {
+      if (promotion.eligibleOn === 'products') {
+        return promotion.eligibleIds.includes(item.productId);
+      } else if (promotion.eligibleOn === 'categories') {
+        return promotion.eligibleIds.includes(item.category);
+      }
+      return false;
+    });
+
+    if (eligibleItems.length === 0) {
+      throw new BadRequestException('No eligible items for this promotion');
+    }
+
+    // Apply discount
+    let discount = 0;
+    const eligibleTotal = eligibleItems.reduce(
+      (acc, item) => acc + item.price * item.quantity,
+      0,
+    );
+
+    if (promotion.discountType === 'percentage') {
+      discount = (promotion.discountValue / 100) * eligibleTotal;
+    } else {
+      discount = Math.min(promotion.discountValue, eligibleTotal);
+    }
+
+    // Ensure max discount is 50%
+    // discount = Math.min(discount, eligibleTotal * 0.5);
+
+    order.discount = discount;
+
+    // Mark the promotion as used
+    promotion.usageCount++;
+    order.promotions.push(promotion);
+    await this.promotionRepository.save(promotion);
+
+    return order;
+  }
+
+  private validatePromotion(promotion: Promotion, order: Order) {
+    if (new Date() > promotion.expirationDate) {
+      throw new BadRequestException('Promotion expired');
+    }
+
+    if (promotion.usageCount >= promotion.usageLimit) {
+      throw new BadRequestException('Promotion usage limit reached');
+    }
+
+    if (order.promotions.some((p) => p.id === promotion.id)) {
+      throw new BadRequestException(
+        'This promotion has already been applied to the order',
+      );
     }
   }
 }

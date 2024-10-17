@@ -9,7 +9,6 @@ import {
 import { Voucher } from '../voucher/voucher.entity';
 import { Promotion } from '../promotion/promotion.entity';
 import { OrderItem } from './entities/order-item.entity';
-import { Expose } from 'class-transformer';
 
 @Entity()
 export class Order {
@@ -18,6 +17,9 @@ export class Order {
 
   @Column('decimal')
   totalAmount: number;
+
+  @Column({ type: 'decimal', nullable: true })
+  discount: number;
 
   @OneToMany(() => OrderItem, (orderItem) => orderItem.order, { cascade: true })
   items: OrderItem[];
