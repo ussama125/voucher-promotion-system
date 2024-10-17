@@ -4,9 +4,14 @@ import { GlobalExceptionFilter } from './common/filters/exception.filter';
 import * as cors from 'cors';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { Logger } from 'nestjs-pino';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    bufferLogs: true, // Buffer logs before NestJS is fully initialized
+  });
+
+  app.useLogger(app.get(Logger)); // Use Pino as the logger
 
   app.setGlobalPrefix('api');
   app.useGlobalFilters(new GlobalExceptionFilter());
