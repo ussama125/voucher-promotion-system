@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -13,12 +14,16 @@ import { Order } from 'src/order/order.entity';
 
 @Injectable()
 export class PromotionService {
+  private readonly logger = new Logger(PromotionService.name);
+
   constructor(
     @InjectRepository(Promotion)
     private promotionRepository: Repository<Promotion>,
   ) {}
 
   async create(promotionData: CreatePromotionDto): Promise<Promotion> {
+    this.logger.log('Creating a new promotion');
+
     if (
       promotionData.discountType === 'percentage' &&
       promotionData.discountValue > 100
@@ -27,16 +32,21 @@ export class PromotionService {
         'Discount value cannot be greater than 100%',
       );
     }
+
     const promotion = this.promotionRepository.create(promotionData);
-    return this.promotionRepository.save(promotion);
+    const savedPromotion = await this.promotionRepository.save(promotion);
+    this.logger.log(`Promotion created with ID: ${savedPromotion.id}`);
+    return savedPromotion;
   }
 
   async findAll(page: number = 1, size: number = 20) {
+    this.logger.log(`Fetching promotions: page ${page}, size ${size}`);
     const [data, count] = await this.promotionRepository.findAndCount({
       skip: (page - 1) * size,
       take: size,
     });
 
+    this.logger.log(`Found ${count} promotions`);
     return {
       page,
       size,
@@ -46,15 +56,18 @@ export class PromotionService {
   }
 
   async findOne(id: number): Promise<Promotion> {
+    this.logger.log(`Fetching promotion with ID: ${id}`);
     const promotion = await this.promotionRepository.findOne({ where: { id } });
 
     if (!promotion) {
       throw new NotFoundException(`Promotion with ID ${id} not found`);
     }
+    this.logger.log(`Found promotion with ID: ${id}`);
     return promotion;
   }
 
   async findByCode(code: string): Promise<Promotion> {
+    this.logger.log(`Fetching promotion with code: ${code}`);
     const promotion = await this.promotionRepository.findOne({
       where: { code },
     });
@@ -62,6 +75,7 @@ export class PromotionService {
     if (!promotion) {
       throw new NotFoundException(`Invalid promotion code: ${code}`);
     }
+    this.logger.log(`Found promotion with code: ${code}`);
     return promotion;
   }
 
@@ -69,20 +83,28 @@ export class PromotionService {
     id: number,
     updatePromotionDto: UpdatePromotionDto,
   ): Promise<Promotion> {
+    this.logger.log(`Updating promotion with ID: ${id}`);
     const result = await this.promotionRepository.update(
       id,
       updatePromotionDto,
     );
+
     if (result.affected === 0) {
       throw new NotFoundException(`Promotion with ID ${id} not found`);
     }
-    return await this.promotionRepository.findOne({ where: { id } });
+
+    const updatedPromotion = await this.promotionRepository.findOne({
+      where: { id },
+    });
+    this.logger.log(`Promotion with ID ${id} updated`);
+    return updatedPromotion;
   }
 
   async updateUsageCount(
     promotionId: number,
     incrementBy: number,
   ): Promise<Promotion> {
+    this.logger.log(`Updating usage count for promotion ID: ${promotionId}`);
     const promotion = await this.promotionRepository.findOne({
       where: { id: promotionId },
     });
@@ -99,17 +121,25 @@ export class PromotionService {
       promotion.usageCount = 0;
     }
 
-    return await this.promotionRepository.save(promotion);
+    const updatedPromotion = await this.promotionRepository.save(promotion);
+    this.logger.log(`Usage count updated for promotion ID: ${promotionId}`);
+    return updatedPromotion;
   }
 
   async delete(id: number): Promise<void> {
+    this.logger.log(`Deleting promotion with ID: ${id}`);
     const result = await this.promotionRepository.delete(id);
+
     if (result.affected === 0) {
       throw new NotFoundException(`Promotion with ID ${id} not found`);
     }
+    this.logger.log(`Promotion with ID ${id} deleted`);
   }
 
   async applyPromotion(order: Order, promoCode: string) {
+    this.logger.log(
+      `Applying promotion with code: ${promoCode} to order ID: ${order.id}`,
+    );
     const promotion = await this.promotionRepository.findOne({
       where: { code: promoCode },
     });
@@ -157,6 +187,9 @@ export class PromotionService {
     order.promotions.push(promotion);
     await this.promotionRepository.save(promotion);
 
+    this.logger.log(
+      `Promotion with code: ${promoCode} applied to order ID: ${order.id}`,
+    );
     return order;
   }
 

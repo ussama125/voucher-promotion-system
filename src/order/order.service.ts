@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Order } from './order.entity';
@@ -10,6 +10,7 @@ import { instanceToPlain } from 'class-transformer';
 
 @Injectable()
 export class OrderService {
+  private readonly logger = new Logger(OrderService.name);
   constructor(
     @InjectRepository(Order)
     private orderRepository: Repository<Order>,
@@ -48,6 +49,7 @@ export class OrderService {
     await this.orderRepository.save(order);
     await this.orderItemRepository.save(orderItems);
 
+    this.logger.log({ orderId: order.id }, 'Order created successfully');
     return instanceToPlain(order);
   }
 
@@ -56,10 +58,6 @@ export class OrderService {
       where: { id: orderId },
       relations: ['items'],
     });
-  }
-
-  async saveOrder(order: Order): Promise<Order> {
-    return this.orderRepository.save(order);
   }
 
   async applyVoucherToOrder(
@@ -96,61 +94,5 @@ export class OrderService {
     );
     await this.orderRepository.save(appliedOrder);
     return appliedOrder;
-  }
-
-  async applyVoucherToOrder1(
-    orderId: number,
-    voucherCode: string,
-  ): Promise<Order> {
-    const order = await this.orderRepository.findOne({
-      where: { id: orderId },
-      relations: ['vouchers'],
-    });
-    const voucher = await this.voucherService.findByCode(voucherCode);
-
-    if (!order || !voucher) {
-      throw new BadRequestException('Order or voucher not found');
-    }
-
-    if (voucher.expirationDate < new Date()) {
-      throw new BadRequestException('Voucher has expired');
-    }
-
-    if (voucher.usageCount >= voucher.usageLimit) {
-      throw new BadRequestException('Voucher usage limit exceeded');
-    }
-
-    if (
-      voucher.minimumOrderValue &&
-      order.totalAmount < voucher.minimumOrderValue
-    ) {
-      throw new BadRequestException(
-        'Order total is below the minimum required for this voucher',
-      );
-    }
-
-    if (order.vouchers.some((v) => v.id === voucher.id)) {
-      throw new BadRequestException(
-        'This voucher has already been applied to the order',
-      );
-    }
-
-    let discountAmount: number;
-    if (voucher.discountType === 'percentage') {
-      discountAmount = order.totalAmount * (voucher.discountValue / 100);
-    } else {
-      discountAmount = voucher.discountValue;
-    }
-
-    // Ensure the discount doesn't exceed 50% of the order total
-    const maxDiscount = order.totalAmount * 0.5;
-    discountAmount = Math.min(discountAmount, maxDiscount);
-
-    order.totalAmount -= discountAmount;
-    order.vouchers.push(voucher);
-    voucher.usageCount++;
-
-    await this.voucherService.updateUsageCount(voucher.id, 1);
-    return this.orderRepository.save(order);
   }
 }
