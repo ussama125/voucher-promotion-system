@@ -66,9 +66,7 @@ export class OrderService {
     order.vouchers.push(voucher);
     voucher.usageCount++;
 
-    await this.voucherService.update(voucher.id, {
-      usageCount: voucher.usageCount,
-    });
+    await this.voucherService.updateUsageCount(voucher.id, 1);
     return this.orderRepository.save(order);
   }
 
@@ -124,9 +122,7 @@ export class OrderService {
     order.promotions.push(promotion);
     promotion.usageCount++;
 
-    await this.promotionService.update(promotion.id, {
-      usageCount: promotion.usageCount,
-    });
+    await this.promotionService.updateUsageCount(promotion.id, 1);
     return this.orderRepository.save(order);
   }
 }

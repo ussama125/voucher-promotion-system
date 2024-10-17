@@ -9,13 +9,15 @@ import {
 } from '@nestjs/common';
 import { PromotionService } from './promotion.service';
 import { Promotion } from './promotion.entity';
+import { UpdatePromotionDto } from './dto/update-promotion.dto';
+import { CreatePromotionDto } from './dto/create-promotion.dto';
 
 @Controller('promotion')
 export class PromotionController {
   constructor(private readonly promotionService: PromotionService) {}
 
   @Post()
-  create(@Body() promotionData: Partial<Promotion>): Promise<Promotion> {
+  create(@Body() promotionData: CreatePromotionDto): Promise<Promotion> {
     return this.promotionService.create(promotionData);
   }
 
@@ -32,7 +34,7 @@ export class PromotionController {
   @Put(':id')
   update(
     @Param('id') id: string,
-    @Body() promotionData: Partial<Promotion>,
+    @Body() promotionData: UpdatePromotionDto,
   ): Promise<Promotion> {
     return this.promotionService.update(+id, promotionData);
   }

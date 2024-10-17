@@ -9,13 +9,15 @@ import {
 } from '@nestjs/common';
 import { VoucherService } from './voucher.service';
 import { Voucher } from './voucher.entity';
+import { CreateVoucherDto } from './dto/create-voucher.dto';
+import { UpdateVoucherDto } from './dto/update-voucher.dto';
 
 @Controller('voucher')
 export class VoucherController {
   constructor(private readonly voucherService: VoucherService) {}
 
   @Post()
-  create(@Body() voucherData: Partial<Voucher>): Promise<Voucher> {
+  create(@Body() voucherData: CreateVoucherDto): Promise<Voucher> {
     return this.voucherService.create(voucherData);
   }
 
@@ -32,7 +34,7 @@ export class VoucherController {
   @Put(':id')
   update(
     @Param('id') id: string,
-    @Body() voucherData: Partial<Voucher>,
+    @Body() voucherData: UpdateVoucherDto,
   ): Promise<Voucher> {
     return this.voucherService.update(+id, voucherData);
   }
