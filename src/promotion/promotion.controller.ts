@@ -6,6 +6,7 @@ import {
   Param,
   Put,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { PromotionService } from './promotion.service';
 import { Promotion } from './promotion.entity';
@@ -22,8 +23,8 @@ export class PromotionController {
   }
 
   @Get()
-  findAll(): Promise<Promotion[]> {
-    return this.promotionService.findAll();
+  findAll(@Query('page') page = 1, @Query('size') size = 20) {
+    return this.promotionService.findAll(Number(page), Number(size));
   }
 
   @Get(':id')

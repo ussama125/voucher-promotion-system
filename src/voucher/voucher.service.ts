@@ -18,12 +18,30 @@ export class VoucherService {
   ) {}
 
   async create(createVoucherDto: CreateVoucherDto): Promise<Voucher> {
+    if (
+      createVoucherDto.discountType === 'percentage' &&
+      createVoucherDto.discountValue > 100
+    ) {
+      throw new BadRequestException(
+        'Discount value cannot be greater than 100%',
+      );
+    }
     const voucher = this.voucherRepository.create(createVoucherDto);
     return await this.voucherRepository.save(voucher);
   }
 
-  async findAll(): Promise<Voucher[]> {
-    return await this.voucherRepository.find();
+  async findAll(page: number = 1, size: number = 20) {
+    const [data, count] = await this.voucherRepository.findAndCount({
+      skip: (page - 1) * size,
+      take: size,
+    });
+
+    return {
+      page,
+      size,
+      count,
+      data,
+    };
   }
 
   async findOne(id: number): Promise<Voucher> {

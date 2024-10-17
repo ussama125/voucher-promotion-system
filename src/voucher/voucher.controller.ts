@@ -6,6 +6,7 @@ import {
   Param,
   Put,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { VoucherService } from './voucher.service';
 import { Voucher } from './voucher.entity';
@@ -22,8 +23,8 @@ export class VoucherController {
   }
 
   @Get()
-  findAll(): Promise<Voucher[]> {
-    return this.voucherService.findAll();
+  findAll(@Query('page') page = 1, @Query('size') size = 20) {
+    return this.voucherService.findAll(Number(page), Number(size));
   }
 
   @Get(':id')

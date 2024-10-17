@@ -19,12 +19,30 @@ export class PromotionService {
   ) {}
 
   async create(promotionData: CreatePromotionDto): Promise<Promotion> {
+    if (
+      promotionData.discountType === 'percentage' &&
+      promotionData.discountValue > 100
+    ) {
+      throw new BadRequestException(
+        'Discount value cannot be greater than 100%',
+      );
+    }
     const promotion = this.promotionRepository.create(promotionData);
     return this.promotionRepository.save(promotion);
   }
 
-  async findAll(): Promise<Promotion[]> {
-    return this.promotionRepository.find();
+  async findAll(page: number = 1, size: number = 20) {
+    const [data, count] = await this.promotionRepository.findAndCount({
+      skip: (page - 1) * size,
+      take: size,
+    });
+
+    return {
+      page,
+      size,
+      count,
+      data,
+    };
   }
 
   async findOne(id: number): Promise<Promotion> {
