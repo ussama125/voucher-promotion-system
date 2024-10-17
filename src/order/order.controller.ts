@@ -1,7 +1,9 @@
-import { Controller, Post, Body, Param, Put } from '@nestjs/common';
+import { Controller, Post, Body, Param } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('order')
 @Controller('order')
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
@@ -11,12 +13,12 @@ export class OrderController {
     return this.orderService.createOrder(createOrderDto);
   }
 
-  @Put(':id/apply-voucher/:code')
+  @Post(':id/apply-voucher/:code')
   async applyVoucher(@Param('id') id: string, @Param('code') code: string) {
     return this.orderService.applyVoucherToOrder(+id, code);
   }
 
-  @Put(':id/apply-promotion/:code')
+  @Post(':id/apply-promotion/:code')
   async applyPromotion(@Param('id') id: string, @Param('code') code: string) {
     return this.orderService.applyPromotionToOrder(+id, code);
   }

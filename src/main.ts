@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './common/filters/exception.filter';
 import * as cors from 'cors';
 import { ValidationPipe } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -38,6 +39,14 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
+
+  const config = new DocumentBuilder()
+    .setTitle('Voucher and Promotion API')
+    .setDescription('API documentation for voucher and promotion management')
+    .setVersion('1.0')
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/docs', app, document);
 
   await app.listen(3000);
 }
