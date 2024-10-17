@@ -7,6 +7,8 @@ import {
   ArrayNotEmpty,
   IsOptional,
   Min,
+  IsDateString,
+  IsNotEmpty,
 } from 'class-validator';
 
 export class CreatePromotionDto {
@@ -22,9 +24,11 @@ export class CreatePromotionDto {
   discountType: 'percentage' | 'fixed';
 
   @IsNumber()
+  @Min(0)
   discountValue: number;
 
-  @IsDate()
+  @IsDateString()
+  @IsNotEmpty()
   expirationDate: Date;
 
   @IsNumber()

@@ -1,11 +1,4 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  ManyToMany,
-  JoinTable,
-} from 'typeorm';
-import { Order } from '../order/order.entity';
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
 @Entity()
 export class Voucher {
@@ -32,8 +25,4 @@ export class Voucher {
 
   @Column({ default: 0 })
   usageCount: number;
-
-  @ManyToMany(() => Order)
-  @JoinTable()
-  orders: Order[];
 }

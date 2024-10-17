@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToMany,
+  JoinTable,
+} from 'typeorm';
 import { Voucher } from '../voucher/voucher.entity';
 import { Promotion } from '../promotion/promotion.entity';
 
@@ -18,9 +24,11 @@ export class Order {
     category: string;
   }[];
 
-  @ManyToMany(() => Voucher, (voucher) => voucher.orders)
+  @ManyToMany(() => Voucher)
+  @JoinTable()
   vouchers: Voucher[];
 
-  @ManyToMany(() => Promotion, (promotion) => promotion.orders)
+  @ManyToMany(() => Promotion)
+  @JoinTable()
   promotions: Promotion[];
 }

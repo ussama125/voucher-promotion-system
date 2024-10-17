@@ -39,7 +39,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         // Unique violation (duplicate key error)
         statusCode = HttpStatus.BAD_REQUEST;
         errorCode = 'ERR_DUPLICATE_KEY';
-        message = `Duplicate key error: ${getDuplicateKeyField(exception)}`;
+        message = `Duplicate ${getDuplicateKeyField(exception)}`;
       } else if (exception.driverError.code === '23503') {
         // Foreign key violation
         statusCode = HttpStatus.BAD_REQUEST;
@@ -78,5 +78,5 @@ const getDuplicateKeyField = (exception: QueryFailedError): string => {
   if (match && match[1]) {
     return match[1];
   }
-  return 'Unknown field';
+  return 'code';
 };
