@@ -21,10 +21,10 @@ export class CreatePromotionDto {
   eligibleIds: string[];
 
   @IsEnum(['products', 'categories'])
-  eligibleOn: 'products' | 'categories';
+  eligibleOn: string;
 
   @IsEnum(['percentage', 'fixed'])
-  discountType: 'percentage' | 'fixed';
+  discountType: string;
 
   @IsNumber()
   @Min(0)
@@ -32,7 +32,7 @@ export class CreatePromotionDto {
 
   @IsDateString()
   @IsNotEmpty()
-  expirationDate: Date;
+  expirationDate: string;
 
   @IsNumber()
   @Min(1)

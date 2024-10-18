@@ -12,10 +12,10 @@ export class Promotion {
   eligibleIds: string[];
 
   @Column()
-  eligibleOn: 'products' | 'categories';
+  eligibleOn: string;
 
   @Column()
-  discountType: 'percentage' | 'fixed';
+  discountType: string;
 
   @Column('decimal', { precision: 10, scale: 2 })
   discountValue: number;
