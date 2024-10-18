@@ -171,16 +171,30 @@ export class PromotionService {
       0,
     );
 
+    let eligibleQuantity = 0;
+    eligibleItems.forEach((item) => {
+      eligibleQuantity += item.quantity;
+    });
+
+    order.totalAmount = Number(order.totalAmount);
+    order.discount = order.discount ? Number(order.discount) : 0;
+
     if (promotion.discountType === 'percentage') {
       discount = (promotion.discountValue / 100) * eligibleTotal;
     } else {
-      discount = Math.min(promotion.discountValue, eligibleTotal);
+      discount = Math.min(
+        eligibleQuantity * promotion.discountValue,
+        eligibleTotal,
+      );
     }
 
     // Ensure max discount is 50%
     // discount = Math.min(discount, eligibleTotal * 0.5);
 
-    order.discount = discount;
+    console.log('*******', discount, eligibleTotal, order.discount);
+
+    order.discount += discount;
+    order.discount = Math.min(order.discount, eligibleTotal);
 
     // Mark the promotion as used
     promotion.usageCount++;

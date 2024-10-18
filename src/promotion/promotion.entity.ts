@@ -1,10 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, Index } from 'typeorm';
 
 @Entity()
 export class Promotion {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Index({ unique: true })
   @Column({ unique: true })
   code: string;
 
@@ -21,6 +22,7 @@ export class Promotion {
   discountValue: number;
 
   @Column()
+  @Index('idx_promo_expiration_date', ['expirationDate'])
   expirationDate: Date;
 
   @Column()

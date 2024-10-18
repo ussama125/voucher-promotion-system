@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, Index } from 'typeorm';
 
 @Entity()
 export class Voucher {
@@ -6,6 +6,7 @@ export class Voucher {
   id: number;
 
   @Column({ unique: true })
+  @Index({ unique: true })
   code: string;
 
   @Column()
@@ -15,6 +16,7 @@ export class Voucher {
   discountValue: number;
 
   @Column()
+  @Index('idx_voucher_expiration_date', ['expirationDate'])
   expirationDate: Date;
 
   @Column()
