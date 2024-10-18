@@ -152,15 +152,27 @@ export class VoucherService {
     this.validateVoucher(voucher, order);
 
     let discount = 0;
-    const eligibleTotal = order.totalAmount;
+    const eligibleTotal = Number(order.totalAmount);
+    order.discount = order.discount ? Number(order.discount) : 0;
+
+    let eligibleQuantity = 0;
+    order.items.forEach((item) => {
+      eligibleQuantity += item.quantity;
+    });
 
     if (voucher.discountType === 'percentage') {
       discount = (voucher.discountValue / 100) * eligibleTotal;
     } else {
-      discount = Math.min(voucher.discountValue, eligibleTotal);
+      discount = Math.min(
+        voucher.discountValue * eligibleQuantity,
+        eligibleTotal,
+      );
     }
 
-    order.discount = discount;
+    console.log('*******', discount, eligibleTotal, order.discount);
+
+    order.discount += discount;
+    order.discount = Math.min(order.discount, order.totalAmount);
 
     voucher.usageCount++;
     order.vouchers.push(voucher);
