@@ -1,19 +1,26 @@
 #!/bin/bash
 
-echo "Updating master branch..."
-git pull origin master
+# Exit on any error
+set -e
 
-# Build Docker image
-echo "Building Docker image..."
-docker build -t voucher-promo-be .
+# Variables
+GIT_BRANCH="master"  # Change this if you use a different branch for deployment
+DOCKER_COMPOSE_FILE="docker-compose.yml"  # Path to your Docker Compose file
 
-# Stop and remove existing Docker container (if exists)
-echo "Stopping and removing existing Docker container..."
-docker stop voucher-promo-be-container || true  # Ignore error if container does not exist
-docker rm voucher-promo-be-container || true    # Ignore error if container does not exist
+echo "Starting deployment..."
 
-# Run Docker container with updated image
-echo "Running Docker container..."
-docker run -d -p 3001:3001 --name voucher-promo-be-container voucher-promo-be
+# Pull latest changes from the master branch
+echo "Updating $GIT_BRANCH branch..."
+git checkout $GIT_BRANCH
+git pull origin $GIT_BRANCH
 
-echo "Deployment completed successfully."
+# Build Docker images (if there are any changes)
+echo "Building Docker images..."
+docker-compose -f $DOCKER_COMPOSE_FILE build
+
+# Restart the services with the latest changes
+echo "Deploying containers..."
+docker-compose -f $DOCKER_COMPOSE_FILE down  # Stop any existing containers
+docker-compose -f $DOCKER_COMPOSE_FILE up -d  # Start the new containers in detached mode
+
+echo "Deployment complete!"
