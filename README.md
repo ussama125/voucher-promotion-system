@@ -1,85 +1,94 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# NestJS Project with PostgreSQL
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## Project Overview
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+This is a NestJS application that manages vouchers and promotions. It provides a RESTful API for creating, updating, and retrieving voucher and promotion information. The application uses PostgreSQL as its database and is designed for scalability and performance.
 
-## Description
+### Features
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- Create, read, update, and delete promotions and vouchers
+- Apply promotions to orders
+- Rate limiting for API endpoints
+- Logging with Pino
 
-## Project setup
+## Technologies Used
 
-```bash
-$ npm install
+- **NestJS**: A progressive Node.js framework for building efficient and scalable server-side applications.
+- **PostgreSQL**: An open-source relational database.
+- **TypeORM**: An ORM that supports various database systems including PostgreSQL.
+- **Docker**: Containerization platform for deploying applications.
+- **Jest** For unit tests
+
+## Getting Started
+
+### Prerequisites
+
+- Docker and Docker Compose installed on your machine.
+
+### Environment Variables
+
+Create a `.env` file in the root of your project with the following variables:
+
+```
+# .env
+PORT=3001
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=myUser
+DB_PASSWORD=myPass
+DB_NAME=voucher_promotion_db_dev
+THROTTLE_TTL=60
+THROTTLE_LIMIT=10
 ```
 
-## Compile and run the project
+### Docker Setup
 
-```bash
-# development
-$ npm run start
+1. **Build and Run the Application with Docker Compose**
 
-# watch mode
-$ npm run start:dev
+   To build and run the application along with PostgreSQL, execute the following command:
 
-# production mode
-$ npm run start:prod
-```
+   ```bash
+    docker-compose up --build
+   ```
 
-## Run tests
+   This command will create two containers: one for the NestJS application and another for PostgreSQL.
 
-```bash
-# unit tests
-$ npm run test
+2. **Accessing the Application**
 
-# e2e tests
-$ npm run test:e2e
+   The NestJS application will be accessible at http://localhost:3001/api.
 
-# test coverage
-$ npm run test:cov
-```
+   You can access the swagger docs at http://localhost:3001/api/docs
 
-## Resources
+### Deployment Instructions
 
-Check out a few resources that may come in handy when working with NestJS:
+1. Pull the Latest Code from the Repository
+   Create a deploy.sh script to automate the deployment process:
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+   ```bash
+   #!/bin/bash
 
-## Support
+   echo "Updating master branch..."
+   git pull origin master
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+   echo "Building and deploying the application..."
+   docker-compose up --build -d
 
-## Stay in touch
+   echo "Deployment completed successfully!"
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+   ```
 
-## License
+2. Run the Deployment Script
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+   Execute the deployment script to update your application on the server:
+
+   ```bash
+   sh ./deploy.sh
+   ```
+
+### Logging
+
+Logs are handled using Pino, and can be configured based on your environment settings. Check the logs for any errors or debugging information.
+
+### License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
