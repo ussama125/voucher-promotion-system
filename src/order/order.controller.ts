@@ -3,6 +3,7 @@ import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { ApplyCodeDto } from './dto/apply-code.dts';
+import { Throttle } from '@nestjs/throttler';
 
 @ApiTags('order')
 @Controller('order')
@@ -14,6 +15,7 @@ export class OrderController {
     return this.orderService.createOrder(createOrderDto);
   }
 
+  @Throttle({ default: { limit: 10, ttl: 60 } }) // 10 requests per 60 seconds
   @Post(':id/apply-voucher')
   async applyVoucher(@Param('id') id: string, @Body() body: ApplyCodeDto) {
     return this.orderService.applyVoucherToOrder(+id, body.code);

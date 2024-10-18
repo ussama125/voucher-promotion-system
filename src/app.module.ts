@@ -6,6 +6,7 @@ import { VoucherModule } from './voucher/voucher.module';
 import { PromotionModule } from './promotion/promotion.module';
 import { OrderModule } from './order/order.module';
 import { LoggerModule } from 'nestjs-pino';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { LoggerModule } from 'nestjs-pino';
         // Custom configuration here for Pino
       },
     }),
+    ThrottlerModule,
     VoucherModule,
     PromotionModule,
     OrderModule,
