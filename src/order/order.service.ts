@@ -64,7 +64,10 @@ export class OrderService {
     orderId: number,
     promotionCode: string,
   ): Promise<Order> {
-    const order = await this.findOne(orderId);
+    const order = await this.orderRepository.findOne({
+      where: { id: orderId },
+      relations: ['vouchers', 'items'],
+    });
 
     if (!order) {
       throw new BadRequestException('Order not found');
@@ -82,7 +85,10 @@ export class OrderService {
     orderId: number,
     promotionCode: string,
   ): Promise<Order> {
-    const order = await this.findOne(orderId);
+    const order = await this.orderRepository.findOne({
+      where: { id: orderId },
+      relations: ['promotions', 'items'],
+    });
 
     if (!order) {
       throw new BadRequestException('Order not found');
