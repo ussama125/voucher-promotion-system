@@ -20,7 +20,7 @@ async function bootstrap() {
   const allowedOrigins = [
     'http://127.0.0.1',
     'http://localhost',
-    'http://44.209.6.220',
+    'http://54.255.200.250',
   ];
 
   app.use(
@@ -53,6 +53,6 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
-  await app.listen(3000);
+  await app.listen(3001);
 }
 bootstrap();
