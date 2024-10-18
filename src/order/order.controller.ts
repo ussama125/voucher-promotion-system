@@ -15,7 +15,7 @@ export class OrderController {
     return this.orderService.createOrder(createOrderDto);
   }
 
-  @Throttle({ default: { limit: 10, ttl: 60 } }) // 10 requests per 60 seconds
+  @Throttle({ default: { limit: 10, ttl: 60000 } }) // 10 requests per 60 seconds
   @Post(':id/apply-voucher')
   async applyVoucher(@Param('id') id: string, @Body() body: ApplyCodeDto) {
     return this.orderService.applyVoucherToOrder(+id, body.code);
