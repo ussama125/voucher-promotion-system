@@ -10,7 +10,6 @@ import { Voucher } from './voucher.entity';
 import { CreateVoucherDto } from './dto/create-voucher.dto';
 import { UpdateVoucherDto } from './dto/update-voucher.dto';
 import { Order } from 'src/order/order.entity';
-import { PinoLogger } from 'nestjs-pino';
 
 @Injectable()
 export class VoucherService {
